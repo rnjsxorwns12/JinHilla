@@ -7,11 +7,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@800&display=swap" rel="stylesheet">
 </head>
 <body>
-<canvas id="canvas" ></canvas>
+<canvas id="canvas" style="display:none;"></canvas>
 <video id="video" autoplay playsinline style="display:none;"></video>
-<canvas id="output_canvas" width="250" height="250"></canvas>
+<canvas id="output_canvas" width="250" height="250" style="position:absolute;top:0px;left:0px;"></canvas>
 <video id="pip_video" autoplay playsinline style="display:none;"></video>
-<button id="pip_Button">PIP</button>
+<button id="pip_Button" style="width:250px;position:absolute;top:250px;left:0px;">PIP 모드</button>
 </body>
 <script>
 var video = document.getElementById("video");
