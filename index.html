@@ -125,6 +125,7 @@ function Detect(data){
 	if(cnt > 5000) return true;
 	return false;
 }
+var caption_height = undefined;
 var time = undefined;
 var hp = undefined;
 var difficulty = 1;
@@ -136,22 +137,11 @@ output_canvas.addEventListener("click", function(){
 });
 output_ctx.textBaseline = "top";
 function func(){
-	canvas.width = video.videoWidth - 6;
-	canvas.height = video.videoHeight - 28;
-	ctx.drawImage(video, 3, 26, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-	let time_frame = ctx.getImageData(canvas.width / 2 - 23, 42, 105, 30);
-	let hp_frame = ctx.getImageData(canvas.width / 2 - 362, 6, 760, 1);
-	let detect_frame = ctx.getImageData(canvas.width / 2 - 362, 19, 760, 12);
-	let time_rslt = Time(time_frame.data);
-	if(time_rslt != undefined) time = time_rslt;
-	let hp_rslt = Hp(hp_frame.data);
-	if(hp_rslt != undefined && time > 0) hp = hp_rslt;
-	if(time != undefined && hp != undefined && Detect(detect_frame.data)){
-		latest_pattern_time = time + 2;
-		if(hp[0] + hp[1] > 2.4) pattern_cycle = 0;
-		else if(hp[0] + hp[1] > 1.2) pattern_cycle = 1;
-		else pattern_cycle = 2;
-	}
+	let canvas_width = canvas.width;
+	canvas.width = video.videoWidth;
+	let resize = Math.abs(canvas.width - canvas_width) > 50;
+	canvas.height = video.videoHeight;
+	ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 	output_ctx.drawImage(output_canvas_bg, 0, 0, output_canvas.width, output_canvas.height);
 	output_ctx.font = "15pt Nanum Gothic";
 	output_ctx.textAlign = "left";
@@ -159,50 +149,72 @@ function func(){
 	output_ctx.fillText("노말", 5, 11);
 	output_ctx.fillStyle = difficulty ? "#FFFFFF" : "#FFFFFF40";
 	output_ctx.fillText("하드", 50, 11);
-	let estimated_time = latest_pattern_time - pattern_cycles[difficulty][pattern_cycle];
-	if(time != undefined && estimated_time >= 0){
-		output_ctx.textAlign = "center";
-		output_ctx.font = "30pt Nanum Gothic";
-		let remaining_time = Math.max(0, time - estimated_time);
-		output_ctx.fillStyle = remaining_time > 10 ? "#000000" : "#FF0000";
-		output_ctx.strokeStyle = "#FFFFFF";
-		output_ctx.lineWidth = 1;
-		let txt = remaining_time + "초 후";
-		output_ctx.fillText(txt, 125, 150);
-		output_ctx.strokeText(txt, 125, 150);
-		output_ctx.font = "40pt Nanum Gothic";
-		output_ctx.fillStyle = "#FFFFFF";
-		output_ctx.strokeStyle = "#000000";
-		output_ctx.lineWidth = 2;
-		let minutes = Math.floor(estimated_time / 60);
-		let seconds = estimated_time - minutes * 60;
-		if(minutes < 10) minutes = "0" + minutes;
-		if(seconds < 10) seconds = "0" + seconds;
-		txt = minutes + "분 " + seconds + "초";
-		output_ctx.fillText(txt, 125, 90);
-		output_ctx.strokeText(txt, 125, 90);
-	}
-	output_ctx.font = "10pt Nanum Gothic";
-	output_ctx.textAlign = "left";
-	output_ctx.fillStyle = "#FFFFFF";
-	if(time_rslt == undefined) output_ctx.fillStyle += "40";
-	output_ctx.fillText("현재 시간", 5, 215);
-	if(time != undefined){
-		let minutes = Math.floor(time / 60);
-		let seconds = time - minutes * 60;
-		if(minutes < 10) minutes = "0" + minutes;
-		if(seconds < 10) seconds = "0" + seconds;
-		output_ctx.fillText(minutes + "분 " + seconds + "초", 5, 230);
-	}
-	output_ctx.textAlign = "right";
-	output_ctx.fillStyle = "#FFFFFF";
-	if(hp_rslt == undefined) output_ctx.fillStyle += "40";
-	output_ctx.fillText("현재 체력", 245, 215);
-	if(hp != undefined){
-		let col = ["#5A960A", "#BFFF00", "#FF3399", "#FF0000"];
-		output_ctx.fillStyle = col[hp[0]];
-		if(hp_rslt == undefined) output_ctx.fillStyle += "40";
-		output_ctx.fillText((4 - hp[0]) + "페이즈 " + parseFloat(hp[1] * 100).toFixed(2) + "%", 245, 230);
+	if(resize) caption_height = undefined;
+	if(caption_height == undefined){
+		for(let i = 0; i <= 50; i++){
+			let time_frame = ctx.getImageData(canvas.width / 2 - 23, i + 42, 105, 30);
+			if(Time(time_frame.data) != undefined){
+				caption_height = i;
+				break;
+			}
+		}
+	}else{
+		let time_frame = ctx.getImageData(canvas.width / 2 - 23, caption_height + 42, 105, 30);
+		let hp_frame = ctx.getImageData(canvas.width / 2 - 362, caption_height + 6, 760, 1);
+		let detect_frame = ctx.getImageData(canvas.width / 2 - 362, caption_height + 19, 760, 12);
+		let time_rslt = Time(time_frame.data);
+		if(time_rslt != undefined) time = time_rslt;
+		let hp_rslt = Hp(hp_frame.data);
+		if(hp_rslt != undefined) hp = hp_rslt;
+		if(time != undefined && hp != undefined){
+			if(Detect(detect_frame.data)){
+				latest_pattern_time = time + 2;
+				if(hp[0] + hp[1] > 2.4) pattern_cycle = 0;
+				else if(hp[0] + hp[1] > 1.2) pattern_cycle = 1;
+				else pattern_cycle = 2;
+			}
+			let estimated_time = latest_pattern_time - pattern_cycles[difficulty][pattern_cycle];
+			if(estimated_time >= 0){
+				output_ctx.textAlign = "center";
+				output_ctx.font = "30pt Nanum Gothic";
+				let remaining_time = Math.max(0, time - estimated_time);
+				output_ctx.fillStyle = remaining_time > 10 ? "#000000" : "#FF0000";
+				output_ctx.strokeStyle = "#FFFFFF";
+				output_ctx.lineWidth = 1;
+				let txt = remaining_time + "초 후";
+				output_ctx.fillText(txt, 125, 150);
+				output_ctx.strokeText(txt, 125, 150);
+				output_ctx.font = "40pt Nanum Gothic";
+				output_ctx.fillStyle = "#FFFFFF";
+				output_ctx.strokeStyle = "#000000";
+				output_ctx.lineWidth = 2;
+				let minutes = Math.floor(estimated_time / 60);
+				let seconds = estimated_time - minutes * 60;
+				if(minutes < 10) minutes = "0" + minutes;
+				if(seconds < 10) seconds = "0" + seconds;
+				txt = minutes + "분 " + seconds + "초";
+				output_ctx.fillText(txt, 125, 90);
+				output_ctx.strokeText(txt, 125, 90);
+			}
+			output_ctx.font = "10pt Nanum Gothic";
+			output_ctx.textAlign = "left";
+			output_ctx.fillStyle = "#FFFFFF";
+			if(time_rslt == undefined) output_ctx.fillStyle += "40";
+			output_ctx.fillText("현재 시간", 5, 215);
+			let minutes = Math.floor(time / 60);
+			let seconds = time - minutes * 60;
+			if(minutes < 10) minutes = "0" + minutes;
+			if(seconds < 10) seconds = "0" + seconds;
+			output_ctx.fillText(minutes + "분 " + seconds + "초", 5, 230);
+			output_ctx.textAlign = "right";
+			output_ctx.fillStyle = "#FFFFFF";
+			if(hp_rslt == undefined) output_ctx.fillStyle += "40";
+			output_ctx.fillText("현재 체력", 245, 215);
+			let col = ["#5A960A", "#BFFF00", "#FF3399", "#FF0000"];
+			output_ctx.fillStyle = col[hp[0]];
+			if(hp_rslt == undefined) output_ctx.fillStyle += "40";
+			output_ctx.fillText((4 - hp[0]) + "페이즈 " + parseFloat(hp[1] * 100).toFixed(2) + "%", 245, 230);
+		}
 	}
 	setTimeout(func, 0);
 }
