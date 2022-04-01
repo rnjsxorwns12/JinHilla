@@ -49,9 +49,12 @@ if(navigator.mediaDevices){
 		});
 		if(document.pictureInPictureEnabled){
 			pip_button.style.display = "block";
-			pip_button.addEventListener('click', function() {
-				if (!document.pictureInPictureElement) pip_video.requestPictureInPicture();
-				else document.exitPictureInPicture();
+			document.addEventListener("visibilitychange", function() {
+				if(document.pictureInPictureElement && document.hidden) document.exitPictureInPicture();
+			});
+			pip_button.addEventListener("click", function() {
+				if (document.pictureInPictureElement) document.exitPictureInPicture();
+				else pip_video.requestPictureInPicture();
 			});
 			pip_video.srcObject = output_canvas.captureStream();
 		}
@@ -143,7 +146,7 @@ function Detect(data){
 		let b = Math.max(0, Math.floor(data[i * 4 + 2] * (3 / 256)) * 128 - 1);
 		if(r > 127 && g + b == 0) cnt++;
 	}
-	if(cnt > 5000) return true;
+	if(cnt > 4000) return true;
 	return false;
 }
 
