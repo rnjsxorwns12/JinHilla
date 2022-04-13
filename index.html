@@ -192,8 +192,9 @@ function func(){
 		let hp_rslt = Hp(hp_frame.data);
 		if(hp_rslt != undefined) hp = hp_rslt;
 		if(time != undefined && hp != undefined){
+			let time = Math.max(0, this.time - Math.floor((Date.now() - time_stamp) / 1000));
 			if(Detect(detect_frame.data)){
-				latest_pattern_time = Math.round(time + 2 - (Date.now() - time_stamp) / 1000);
+				latest_pattern_time = time + 2;
 				if(hp < hp_width * 4 * 0.31){
 					pattern_cycle = [2];
 					if(hp == Math.floor(hp_width * 4 * 0.31)) pattern_cycle.push(1);
