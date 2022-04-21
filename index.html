@@ -276,7 +276,8 @@ function Main(){
 				output_ctx.strokeStyle = "#FFFFFF";
 				output_ctx.lineWidth = 1;
 				if(remaining_time > 0){
-					if(remaining_time == 5 || (remaining_time < 60 && remaining_time % 10 == 0) || remaining_time % 30 == 0){
+					if(remaining_time <= 10) Speak(remaining_time);
+					else if((remaining_time < 60 && remaining_time % 10 == 0) || remaining_time % 30 == 0){
 						let minutes = Math.floor(remaining_time / 60);
 						let seconds = remaining_time - minutes * 60;
 						Speak((minutes > 0 ? minutes + "분 " : "") + (seconds > 0 ? seconds + "초 " : "") + "남았습니다");
