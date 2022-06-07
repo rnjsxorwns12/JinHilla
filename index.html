@@ -246,6 +246,16 @@ function Main(){
 	let resize = Math.abs(canvas.width - canvas_width) > 50;
 	canvas.height = video.videoHeight;
 	ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+	//test code
+	ctx.textBaseline = "bottom";
+	ctx.textAlign = "right";
+	ctx.font = "25pt Nanum Gothic";
+	ctx.fillStyle = "#FFFFFF";
+	ctx.strokeStyle = "#000000";
+	ctx.lineWidth = 2;
+	ctx.fillText("devicePixelRatio : " + window.devicePixelRatio, canvas.width, canvas.height);
+	ctx.strokeText("devicePixelRatio : " + window.devicePixelRatio, canvas.width, canvas.height);
+	//
 	output_ctx.textBaseline = "top";
 	output_ctx.drawImage(output_canvas_bg, 0, 0, output_canvas.width, output_canvas.height);
 	output_ctx.font = "15pt Nanum Gothic";
