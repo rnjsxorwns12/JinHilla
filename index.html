@@ -44,6 +44,7 @@ var pattern_cycles = [[180, 150, 120], [150, 125, 100]];
 var pattern_cycle = 0;
 var difficulty = 1;
 var latest_pattern_time = 1784;
+var uncertain = false;
 var synth = window.speechSynthesis;
 var synth_utter = undefined;
 var worker = undefined;
@@ -246,16 +247,6 @@ function Main(){
 	let resize = Math.abs(canvas.width - canvas_width) > 50;
 	canvas.height = video.videoHeight;
 	ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-	//test code
-	ctx.textBaseline = "bottom";
-	ctx.textAlign = "right";
-	ctx.font = "25pt Nanum Gothic";
-	ctx.fillStyle = "#FFFFFF";
-	ctx.strokeStyle = "#000000";
-	ctx.lineWidth = 2;
-	ctx.fillText("devicePixelRatio : " + window.devicePixelRatio, canvas.width, canvas.height);
-	ctx.strokeText("devicePixelRatio : " + window.devicePixelRatio, canvas.width, canvas.height);
-	//
 	output_ctx.textBaseline = "top";
 	output_ctx.drawImage(output_canvas_bg, 0, 0, output_canvas.width, output_canvas.height);
 	output_ctx.font = "15pt Nanum Gothic";
@@ -290,39 +281,45 @@ function Main(){
 			let curr_time = time - Math.floor(millis);
 			if(Detect(detect_frame.data)){
 				latest_pattern_time = curr_time + (Math.floor(millis) == Math.round(millis) ? 2 : 1);
+				uncertain = hp == 61 || hp == 31;
 				if(hp < 31) pattern_cycle = 2;
 				else if(hp < 61) pattern_cycle = 1;
 				else pattern_cycle = 0;
 			}
 			output_ctx.textAlign = "center";
-			let estimated_time = latest_pattern_time - pattern_cycles[difficulty][pattern_cycle];
-			if(estimated_time >= 0){
-				output_ctx.font = "30pt Nanum Gothic";
-				let remaining_time = Math.max(0, curr_time - estimated_time);
-				output_ctx.fillStyle = remaining_time > 10 ? "#000000" : "#FF0000";
-				output_ctx.strokeStyle = "#FFFFFF";
-				output_ctx.lineWidth = 1;
-				if(remaining_time > 0){
+			let estimated_time = [latest_pattern_time - pattern_cycles[difficulty][pattern_cycle]];
+			if(uncertain){
+				let uncertain_estimated_time = estimated_time[0] + (pattern_cycles[difficulty][0] - pattern_cycles[difficulty][1])
+				if(curr_time - uncertain_estimated_time >= 0) estimated_time.push(uncertain_estimated_time);
+			}
+			for(let i = 0; i < estimated_time.length; i++){
+				if(estimated_time[i] < 0) continue;
+				let remaining_time = Math.max(0, curr_time - estimated_time[i]);
+				if(i == 0 && remaining_time > 0){
 					if(remaining_time <= 10) Speak(remaining_time);
 					else if((remaining_time < 60 && remaining_time % 10 == 0) || remaining_time % 30 == 0){
 						let minutes = Math.floor(remaining_time / 60);
 						let seconds = remaining_time - minutes * 60;
-						Speak((minutes > 0 ? minutes + "분 " : "") + (seconds > 0 ? seconds + "초 " : "") + "남았습니다");
+						Speak((minutes > 0 ? minutes + "분 " : "") + (seconds > 0 ? seconds + "초 " : "") + "남았습니다." + (estimated_time.length > 1 ? " 패턴이 더 빨리 올 가능성이 있습니다." : ""));
 					}
 				}
+				output_ctx.font = (estimated_time.length > 1 ? 20 : 30) + "pt Nanum Gothic";
+				output_ctx.fillStyle = remaining_time > 10 ? "#000000" : "#FF0000";
+				output_ctx.strokeStyle = "#FFFFFF";
+				output_ctx.lineWidth = 1;
 				let txt = remaining_time + "초 후";
-				output_ctx.fillText(txt, 125, 145);
-				output_ctx.strokeText(txt, 125, 145);
-				output_ctx.font = "35pt Nanum Gothic";
+				output_ctx.fillText(txt, 125, 145 + (estimated_time.length > 1 ? (i == 0 ? 25 : -55) : 0));
+				output_ctx.strokeText(txt, 125, 145 + (estimated_time.length > 1 ? (i == 0 ? 25 : -55) : 0));
+				output_ctx.font = (estimated_time.length > 1 ? 30 : 35) + "pt Nanum Gothic";
 				output_ctx.fillStyle = "#FFFFFF";
 				output_ctx.strokeStyle = "#000000";
 				output_ctx.lineWidth = 2;
-				let minutes = Math.floor(estimated_time / 60);
-				let seconds = estimated_time - minutes * 60;
+				let minutes = Math.floor(estimated_time[i] / 60);
+				let seconds = estimated_time[i] - minutes * 60;
 				txt = (minutes < 10 ? "0" : "") + minutes + "분 " + (seconds < 10 ? "0" : "") + seconds + "초";
-				output_ctx.fillText(txt, 125, 90);
-				output_ctx.strokeText(txt, 125, 90);
-			}
+				output_ctx.fillText(txt, 125, 90 + (estimated_time.length > 1 ? (i == 0 ? 35 : -45) : 0));
+				output_ctx.strokeText(txt, 125, 90 + (estimated_time.length > 1 ? (i == 0 ? 35 : -45) : 0));
+			}			
 			output_ctx.font = "10pt Nanum Gothic";
 			output_ctx.textAlign = "left";
 			output_ctx.fillStyle = "#FFFFFF";
