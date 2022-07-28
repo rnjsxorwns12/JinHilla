@@ -40,11 +40,10 @@ var caption_height = undefined;
 var time = undefined;
 var time_stamp = undefined;
 var hp = 100;
-var pattern_cycles = [[180, 150, 120], [150, 125, 100]];
-var pattern_cycle = 0;
+var pattern_cycles = [[180, 150], [150, 125, 100]];
 var difficulty = 1;
 var latest_pattern_time = 1784;
-var uncertain = false;
+var latest_pattern_hp = hp;
 var synth = window.speechSynthesis;
 var synth_utter = undefined;
 var worker = undefined;
@@ -281,10 +280,19 @@ function Main(){
 			let curr_time = time - Math.floor(millis);
 			if(Detect(detect_frame.data)){
 				latest_pattern_time = curr_time + (Math.floor(millis) == Math.round(millis) ? 2 : 1);
-				uncertain = hp == 61 || hp == 31;
-				if(hp < 31) pattern_cycle = 2;
-				else if(hp < 61) pattern_cycle = 1;
-				else pattern_cycle = 0;
+				latest_pattern_hp = hp;
+			}
+			let pattern_cycle = 0;
+			let uncertain = false;
+			if(difficulty){
+				if(latest_pattern_hp == 61 || latest_pattern_hp == 31) uncertain = true;
+				if(latest_pattern_hp < 31) pattern_cycle = 2;
+				else if(latest_pattern_hp < 61) pattern_cycle = 1;
+			}
+			else
+			{
+				if(latest_pattern_hp == 51) uncertain = true;
+				if(latest_pattern_hp < 51) pattern_cycle = 1;
 			}
 			output_ctx.textAlign = "center";
 			let estimated_time = [latest_pattern_time - pattern_cycles[difficulty][pattern_cycle]];
