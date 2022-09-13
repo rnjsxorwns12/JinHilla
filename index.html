@@ -308,7 +308,13 @@ function Main(){
 					else if((remaining_time < 60 && remaining_time % 10 == 0) || remaining_time % 30 == 0){
 						let minutes = Math.floor(remaining_time / 60);
 						let seconds = remaining_time - minutes * 60;
-						Speak((minutes > 0 ? minutes + "분 " : "") + (seconds > 0 ? seconds + "초 " : "") + "남았습니다." + (estimated_time.length > 1 ? " 패턴이 더 빨리 올 가능성이 있습니다." : ""));
+						let txt = (minutes > 0 ? minutes + "분 " : "") + (seconds > 0 ? seconds + "초 " : "") + "남았습니다.";
+						if(estimated_time.length > 1){
+							minutes = Math.floor(estimated_time[1] / 60);
+							seconds = estimated_time[1] - minutes * 60;
+							txt += " " + minutes + "분 " + seconds + "초에 올 가능성도 있으니 주의하세요.";
+						}
+						Speak(txt);
 					}
 				}
 				output_ctx.font = (estimated_time.length > 1 ? 20 : 30) + "pt Nanum Gothic";
