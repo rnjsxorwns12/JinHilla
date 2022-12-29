@@ -2,6 +2,15 @@
 <html>
 <head>
 <meta charset="utf-8">
+<title>진힐라 타이머</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E8B4446V02"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-E8B4446V02');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@800&display=swap" rel="stylesheet">
@@ -356,6 +365,7 @@ var pattern_cycles = [[180, 150], [150, 125, 100]];
 var pattern_time = 1784;
 var pattern_hp = hp;
 var difficulty = 1;
+var frame_buffer;
 if(window.Worker && navigator.mediaDevices){
 	if(synth){
 		synth.addEventListener("voiceschanged", function(){
@@ -434,7 +444,7 @@ function SendStream(){
 		}
 		ctx.drawImage(video, 0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 	}else ctx.clearRect(0, 0, canvas.width, canvas.height);
-	let frame_buffer = ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer;
+	frame_buffer = ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer;
 	worker.postMessage({frame_buffer:frame_buffer,frame_width:canvas.width, frame_height:canvas.height, time_rect:time_rect, hp_rect:hp_rect}, [frame_buffer]);
 }
 function Streaming(){
