@@ -33,8 +33,8 @@
 </div>
 <script>
 function Sobel(frame, frame_width, rect){
-	let sobel_x = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
-	let sobel_y = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]];
+	const sobel_x = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
+	const sobel_y = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]];
 	let sobel_max = -1;
 	let sobel = new Array(rect[2]);
 	for(let i = 0; i < rect[2]; i++) sobel[i] = new Array(rect[3]).fill(0);
@@ -365,7 +365,6 @@ var pattern_cycles = [[180, 150], [150, 125, 100]];
 var pattern_time = 1784;
 var pattern_hp = hp;
 var difficulty = 1;
-var frame_buffer;
 if(window.Worker && navigator.mediaDevices){
 	if(synth){
 		synth.addEventListener("voiceschanged", function(){
@@ -444,8 +443,7 @@ function SendStream(){
 		}
 		ctx.drawImage(video, 0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 	}else ctx.clearRect(0, 0, canvas.width, canvas.height);
-	frame_buffer = ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer;
-	worker.postMessage({frame_buffer:frame_buffer,frame_width:canvas.width, frame_height:canvas.height, time_rect:time_rect, hp_rect:hp_rect}, [frame_buffer]);
+	worker.postMessage({frame_buffer:ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer,frame_width:canvas.width, frame_height:canvas.height, time_rect:time_rect, hp_rect:hp_rect});
 }
 function Streaming(){
 	if(!streaming){
