@@ -262,7 +262,7 @@ function Work(param){
 		if(time) self.time_rect_reset = 0;
 		else{
 			self.time_rect_reset++;
-			if(self.time_rect_reset == 20){
+			if(self.time_rect_reset == 100){
 				time_rect = null;
 				self.time_rect_reset = 0;
 			}
@@ -274,7 +274,7 @@ function Work(param){
 		if(hp) self.hp_rect_reset = 0;
 		else{
 			self.hp_rect_reset++;
-			if(self.hp_rect_reset == 20){
+			if(self.hp_rect_reset == 100){
 				hp_rect = null;
 				self.hp_rect_reset = 0;
 			}
@@ -330,9 +330,7 @@ function Work(param){
 			}
 		}
 	}
-	setTimeout(function(){
-		self.postMessage({time:time, hp:hp, pattern:pattern, time_rect:time_rect, hp_rect:hp_rect, pattern_rect:pattern_rect});
-	}, 50);
+	self.postMessage({time:time, hp:hp, pattern:pattern, time_rect:time_rect, hp_rect:hp_rect, pattern_rect:pattern_rect});
 }
 var monitoring_button = document.getElementById("monitoring_button");
 var monitoring = document.getElementById("monitoring");
@@ -443,7 +441,8 @@ function SendStream(){
 		}
 		ctx.drawImage(video, 0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 	}else ctx.clearRect(0, 0, canvas.width, canvas.height);
-	worker.postMessage({frame_buffer:ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer,frame_width:canvas.width, frame_height:canvas.height, time_rect:time_rect, hp_rect:hp_rect});
+	let frame_buffer = ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer;
+	worker.postMessage({frame_buffer:frame_buffer,frame_width:canvas.width, frame_height:canvas.height, time_rect:time_rect, hp_rect:hp_rect}, [frame_buffer]);
 }
 function Streaming(){
 	if(!streaming){
