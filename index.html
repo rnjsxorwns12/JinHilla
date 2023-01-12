@@ -442,7 +442,7 @@ function SendStream(){
 		ctx.drawImage(video, 0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 	}else ctx.clearRect(0, 0, canvas.width, canvas.height);
 	let frame_buffer = ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer;
-	worker.postMessage({frame_buffer:frame_buffer,frame_width:canvas.width, frame_height:canvas.height, time_rect:time_rect, hp_rect:hp_rect}, [frame_buffer]);
+	worker.postMessage({frame_buffer:frame_buffer, frame_width:canvas.width, frame_height:canvas.height, time_rect:time_rect, hp_rect:hp_rect}, [frame_buffer]);
 }
 function Streaming(){
 	if(!streaming){
@@ -470,8 +470,8 @@ function Streaming(){
 		});
 	}
 }
-function Speak(text){
-	if(synth_utter && synth_utter.text != text){
+function Speak(text, repeat){
+	if(synth_utter && (synth_utter.text != text || (repeat && !synth.speaking))){
 		synth.cancel();
 		synth_utter.text = text;
 		synth.speak(synth_utter);
@@ -509,14 +509,17 @@ function Main(){
 	for(let i = 0; i < estimated_time.length; i++){
 		if(estimated_time[i] < 0) continue;
 		let remaining_time = Math.max(0, curr_time - estimated_time[i]);
-		if(i == estimated_time.length - 1 && remaining_time > 0){
-			if(remaining_time <= 10) Speak(remaining_time);
-			else if((remaining_time < 60 && remaining_time % 10 == 0) || remaining_time % 30 == 0){
-				let minutes = Math.floor(remaining_time / 60);
-				let seconds = remaining_time - minutes * 60;
-				let txt = (minutes > 0 ? minutes + "분 " : "") + (seconds > 0 ? seconds + "초 " : "") + "남았습니다.";
-				if(estimated_time.length > 1) txt += " 예상보다 늦게 올 가능성도 있으니 모래시계를 보고 판단하세요.";
-				Speak(txt);
+		if(i == estimated_time.length - 1){
+			if(!hp_rect) Speak("체력 인식 불가", true);
+			else if(remaining_time > 0){
+				if(remaining_time <= 10) Speak(remaining_time, false);
+				else if((remaining_time < 60 && remaining_time % 10 == 0) || remaining_time % 30 == 0){
+					let minutes = Math.floor(remaining_time / 60);
+					let seconds = remaining_time - minutes * 60;
+					let txt = (minutes > 0 ? minutes + "분 " : "") + (seconds > 0 ? seconds + "초 " : "") + "남았습니다.";
+					if(estimated_time.length > 1) txt += " 예상보다 늦게 올 가능성도 있으니 모래시계를 보고 판단하세요.";
+					Speak(txt, false);
+				}
 			}
 		}
 		output_ctx.font = (estimated_time.length > 1 ? 20 : 30) + "pt Nanum Gothic";
