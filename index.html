@@ -510,7 +510,9 @@ function Main(){
 		if(estimated_time[i] < 0) continue;
 		let remaining_time = Math.max(0, curr_time - estimated_time[i]);
 		if(i == estimated_time.length - 1){
-			if(!hp_rect) Speak("체력 인식 불가", true);
+			if(hp < 100 && hp > 2) {
+				Speak("체력 인식 불가", true);
+			}
 			else if(remaining_time > 0){
 				if(remaining_time <= 10) Speak(remaining_time, false);
 				else if((remaining_time < 60 && remaining_time % 10 == 0) || remaining_time % 30 == 0){
