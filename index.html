@@ -358,10 +358,10 @@ var time_rslt;
 var hp_rslt;
 var time_stamp;
 var time;
-var hp = 100;
+var hp;
 var pattern_cycles = [[180, 150], [150, 125, 100]];
 var pattern_time = 1784;
-var pattern_hp = hp;
+var pattern_hp = 100;
 var difficulty = 1;
 if(window.Worker && navigator.mediaDevices){
 	if(synth){
@@ -392,7 +392,7 @@ if(window.Worker && navigator.mediaDevices){
 			time_stamp = now;
 			time = time_rslt;
 		}
-		if(time && result.data.pattern > 0.1){
+		if(time && hp && result.data.pattern > 0.1){
 			pattern_time = Math.round(time + 2 - (now - time_stamp) / 1000);
 			pattern_hp = hp;
 		}
@@ -487,7 +487,7 @@ function Main(){
 	output_ctx.fillText("노말", 5, 12);
 	output_ctx.fillStyle = difficulty ? "#FFFFFF" : "#FFFFFF40";
 	output_ctx.fillText("하드", 50, 12);
-	if(!time) return;
+	if(!time || !hp) return;
 	let curr_time = time - Math.floor((Date.now() - time_stamp) / 1000);
 	let pattern_cycle = 0;
 	let uncertain = false;
@@ -510,9 +510,7 @@ function Main(){
 		if(estimated_time[i] < 0) continue;
 		let remaining_time = Math.max(0, curr_time - estimated_time[i]);
 		if(i == estimated_time.length - 1){
-			if(hp < 100 && hp > 2) {
-				Speak("체력 인식 불가", true);
-			}
+			if(!hp_rect && time > 2 && hp > 2) Speak("체력 인식 불가", true);
 			else if(remaining_time > 0){
 				if(remaining_time <= 10) Speak(remaining_time, false);
 				else if((remaining_time < 60 && remaining_time % 10 == 0) || remaining_time % 30 == 0){
